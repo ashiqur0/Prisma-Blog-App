@@ -13,21 +13,37 @@ datasource db {
 }
 
 model Post {
-  id String @id @default(uuid())
-  title String @db.VarChar(255)
-  content String @db.Text
-  thumbnail String?
-  isFeatured Boolean @default(false)
-  status PostStatus @default(PUBLISHED)
-  tags String[]
-  views Int @default(0)
-  authorId String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String     @id @default(uuid())
+  title      String     @db.VarChar(255)
+  content    String     @db.Text
+  thumbnail  String?
+  isFeatured Boolean    @default(false)
+  status     PostStatus @default(PUBLISHED)
+  tags       String[]
+  views      Int        @default(0)
+  authorId   String
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Comment {
+  id        String        @id @default(uuid())
+  content   String        @db.Text
+  authorId  String
+  postId    String
+  parentId  String?
+  status    CommentStatus @default(APPROVED)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 enum PostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+enum CommentStatus {
+  APPROVED
+  REJECT
 }
