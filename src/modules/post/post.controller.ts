@@ -19,6 +19,32 @@ const createPost = async (req: Request, res: Response) => {
     }
 }
 
+const getPostById = async (req: Request, res: Response) => {
+    try {
+        const result = await postServices.getPostById(req.params.id as string);
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Post retrieved successfully",
+            result
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to get post",
+            error: error.message
+        })
+    }
+}
+
 export const postController = {
     createPost,
+    getPostById,
 }
