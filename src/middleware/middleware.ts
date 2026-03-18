@@ -20,41 +20,49 @@ declare global {
     }
 }
 
-const isAuthenticated = (...roles: UserRole[]) => {
+const auth = (...roles: UserRole[]) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        // get user session
-        const session = await betterAuth.api.getSession({
-            headers: req.headers as any
-        });
-
-        if (!session || !session.user) {
-            return res.status(401).json({ 
-                error: "Unauthorized" 
+        try {
+            // get user session
+            const session = await betterAuth.api.getSession({
+                headers: req.headers as any
             });
-        }
 
-        if (!session.user.emailVerified) {
-            return res.status(403).json({
-                error: "Email not verified"
-            });
-        }
+            if (!session || !session.user) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Unauthorized",
+                    error: "Unauthorized"
+                });
+            }
 
-        if (roles.length && !roles.includes(session.user.role as UserRole)) {
-            return res.status(403).json({ 
-                error: "Forbidden" 
-            });
-        }
+            if (!session.user.emailVerified) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Email not verified"
+                });
+            }
 
-        req.user = {
-            id: session.user.id,
-            email: session.user.email,
-            name: session.user.name,
-            role: session.user.role as UserRole,
-            emailVerified: session.user.emailVerified
-        }
+            if (roles.length && !roles.includes(session.user.role as UserRole)) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Forbidden"
+                });
+            }
 
-        next();
+            req.user = {
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.name,
+                role: session.user.role as UserRole,
+                emailVerified: session.user.emailVerified
+            }
+
+            next();
+        } catch (error) {
+           next(error);
+        }
     }
 }
 
-export default isAuthenticated;
+export default auth;
