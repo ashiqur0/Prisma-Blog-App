@@ -53,7 +53,8 @@ const getPostById = async (req: Request, res: Response) => {
 
 const getAllPosts = async (req: Request, res: Response) => {
     try {
-        const result = await postServices.getAllPosts();
+        const search = req.query.search as string || "";
+        const result = await postServices.getAllPosts({ search });
 
         if (result.length === 0) {
             return res.status(404).json({

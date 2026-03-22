@@ -11,6 +11,11 @@ app.use(cors({
     credentials: true
 }));
 
+app.use(cors({
+    origin: process.env.APP_URL || "http://localhost:4000", // client URL
+    credentials: true
+}))
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.all("/api/auth/*splat", toNodeHandler(auth));
