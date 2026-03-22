@@ -21,7 +21,7 @@ const getPostById = async (id: string) => {
     return result;
 }
 
-const getAllPosts = async ({ search, tags }: { search: string, tags: string }) => {
+const getAllPosts = async ({ search, tags }: { search: string, tags: string[] }) => {
     const andConditions: PostWhereInput[] = [];
 
     if (search) {
@@ -43,14 +43,14 @@ const getAllPosts = async ({ search, tags }: { search: string, tags: string }) =
         });
     }
 
-    if (tags) {
+    if (tags.length > 0) {
         andConditions.push({
             tags: {
-                has: tags
+                hasEvery: tags
             }
         });
     }
-    
+
     const result = await prisma.post.findMany({
         where: {
             AND: andConditions
