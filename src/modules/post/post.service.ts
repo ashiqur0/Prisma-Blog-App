@@ -46,7 +46,7 @@ const getAllPosts = async ({ search, tags }: { search: string, tags: string[] })
     if (tags.length > 0) {
         andConditions.push({
             tags: {
-                hasEvery: tags
+                hasEvery: tags as string[]
             }
         });
     }

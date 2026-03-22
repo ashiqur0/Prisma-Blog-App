@@ -54,7 +54,7 @@ const getPostById = async (req: Request, res: Response) => {
 const getAllPosts = async (req: Request, res: Response) => {
     try {
         const search = req.query.search as string || "";
-        const tags = req.query.tags as string[];
+        const tags = (req.query.tags as string)?.split(",") || [];
         const result = await postServices.getAllPosts({ search, tags });
 
         if (result.length === 0) {
