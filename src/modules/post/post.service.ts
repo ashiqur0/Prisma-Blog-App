@@ -84,7 +84,7 @@ const getAllPosts = async (
         });
     }
 
-    const result = await prisma.post.findMany({
+    const allPosts = await prisma.post.findMany({
         where: {
             AND: andConditions
         },
@@ -95,7 +95,21 @@ const getAllPosts = async (
         }
     });
 
-    return result;
+    const total = await prisma.post.count({
+        where: {
+            AND: andConditions
+        }
+    });
+
+    return { 
+        data: allPosts, 
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit)
+        }
+     };
 }
 
 export const postServices = {
