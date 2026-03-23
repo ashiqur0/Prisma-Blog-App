@@ -1,4 +1,5 @@
-import { Post, PostStatus } from "../../../generated/prisma/client";
+import { Stats } from "node:fs";
+import { CommentStatus, Post, PostStatus } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 
@@ -92,6 +93,11 @@ const getAllPosts = async (
         take: limit,
         orderBy: {
             [sortBy]: sortOrder
+        },
+        include: {
+            _count: {
+                select: { comments: true }
+            }
         }
     });
 
@@ -135,15 +141,29 @@ const getPostById = async (postId: string) => {
             include: {
                 comments: {
                     where: {
-                        parentId: null
+                        parentId: null,
+                        status: CommentStatus.APPROVED
+                    },
+                    orderBy: {
+                        createdAt: "desc"
                     },
                     include: {
                         replies: {
+                            where: { 
+                                status: CommentStatus.APPROVED 
+                            },
+                            orderBy: { createdAt: "asc" },
                             include: {
-                                replies: true
+                                replies: {
+                                    where: { status: CommentStatus.APPROVED },
+                                    orderBy: { createdAt: "asc" }
+                                }
                             }
                         }
                     }
+                },
+                _count: {   // shows total number of comments for the post
+                    select: { comments: true }
                 }
             }
         });
