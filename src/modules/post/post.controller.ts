@@ -48,7 +48,7 @@ const getAllPosts = async (req: Request, res: Response) => {
 
         const result = await postServices.getAllPosts({ search, tags, isFeatured, status, authorId, page, limit, skip, sortBy, sortOrder });
 
-        if (result.length === 0) {
+        if (result.data.length === 0) {
             return res.status(404).json({
                 success: true,
                 message: "No posts found",
@@ -70,7 +70,36 @@ const getAllPosts = async (req: Request, res: Response) => {
     }
 }
 
+const getPostById = async (req: Request, res: Response) => {
+    try {
+        const PostId = req.params.id;
+
+        const result = await postServices.getPostById(PostId as string);
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found"
+            })
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Post retrieved successfully",
+            result: result
+        })
+
+    } catch (error: any) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to get post",
+            error: error.message
+        })
+    }
+}
+
 export const postController = {
     createPost,
-    getAllPosts
+    getAllPosts,
+    getPostById
 }
