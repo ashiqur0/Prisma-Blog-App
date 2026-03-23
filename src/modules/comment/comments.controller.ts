@@ -26,6 +26,30 @@ const createComment = async (req: Request, res: Response) => {
     }
 }
 
+const getCommentsById = async (req: Request, res: Response) => {
+    try {
+        const commentId = req.params.id;
+        const result = await commentService.getCommentsById(commentId as string);
+
+        if (!result) {
+            return res.status(404).json({
+                message: "Comment not found"
+            });
+        }
+
+        res.status(200).json({
+            message: "Comment fetched successfully",
+            comment: result
+        });        
+    } catch (error) {
+        res.status(500).json({ 
+            message: "Internal server error",
+            error: error
+        });
+    }
+}
+
 export const commentController = {
-    createComment
+    createComment,
+    getCommentsById,
 }
