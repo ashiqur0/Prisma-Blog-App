@@ -19,13 +19,17 @@ const getAllPosts = async (
         tags,
         isFeatured,
         status,
-        authorId
+        authorId,
+        page,
+        limit
     }: {
         search: string,
         tags: string[],
         isFeatured: boolean | undefined,
         status: PostStatus | undefined,
-        authorId: string | undefined
+        authorId: string | undefined,
+        page: number,
+        limit: number
     }) => {
     const andConditions: PostWhereInput[] = [];
 
@@ -77,7 +81,9 @@ const getAllPosts = async (
     const result = await prisma.post.findMany({
         where: {
             AND: andConditions
-        }
+        },
+        skip: (page - 1) * limit,
+        take: limit
     });
 
     return result;
