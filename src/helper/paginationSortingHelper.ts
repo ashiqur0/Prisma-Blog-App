@@ -9,8 +9,8 @@ type IOptionsResult = {
     page: number;
     limit: number;
     skip: number;
-    sortBy?: string;
-    sortOrder?: string;
+    sortBy: string;
+    sortOrder: string;
 }
 
 const paginationSortingHelper = (options: IOptions): IOptionsResult => {
