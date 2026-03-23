@@ -22,6 +22,7 @@ const getAllPosts = async (
         authorId,
         page,
         limit,
+        skip,
         sortBy,
         sortOrder
     }: {
@@ -32,6 +33,7 @@ const getAllPosts = async (
         authorId: string | undefined,
         page: number,
         limit: number,
+        skip: number,
         sortBy?: string | undefined,
         sortOrder?: string | undefined
     }) => {
@@ -86,7 +88,7 @@ const getAllPosts = async (
         where: {
             AND: andConditions
         },
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         orderBy: sortBy && sortOrder ? {
             [sortBy]: sortOrder
