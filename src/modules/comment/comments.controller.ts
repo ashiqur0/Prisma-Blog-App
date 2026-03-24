@@ -120,8 +120,7 @@ const moderateComment = async (req: Request, res: Response) => {
         });
     } catch (error: any) {
         res.status(500).json({
-            message: "Internal server error",
-            error: error.message
+            message: error.message || "Internal server error"
         });
     }
 }
