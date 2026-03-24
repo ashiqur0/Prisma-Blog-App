@@ -5,9 +5,10 @@ import auth, { UserRole } from '../../middleware/middleware';
 const router = expres.Router();
 
 router.post("/", auth(UserRole.USER, UserRole.ADMIN), commentController.createComment);
-router.get("/:id", commentController.getCommentsById);
+router.get("/:commentId", commentController.getCommentsById);
 router.get("/author/:authorId", commentController.getCommentsByAuthor);
-router.delete("/:id", auth(UserRole.USER, UserRole.ADMIN), commentController.deleteComment);
-router.patch("/:id", auth(UserRole.USER, UserRole.ADMIN), commentController.updateComment);
+router.delete("/:commentId", auth(UserRole.USER, UserRole.ADMIN), commentController.deleteComment);
+router.patch("/:commentId", auth(UserRole.USER, UserRole.ADMIN), commentController.updateComment);
+router.post("/:commentId/moderate", auth(UserRole.ADMIN), commentController.moderateComment);
 
 export const commentRouter: Router = router;
