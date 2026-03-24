@@ -73,8 +73,27 @@ const getCommentsByAuthor = async (req: Request, res: Response) => {
     }
 }
 
+const deleteComment = async (req: Request, res: Response) => {
+    try {
+        const user = req.user
+        const commentId = req.params.id;
+        await commentService.deleteComment(commentId as string, user?.id as string);
+
+        res.status(200).json({
+            message: "Comment deleted successfully"
+        });
+
+    } catch (error: any) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
 export const commentController = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
+    deleteComment
 }

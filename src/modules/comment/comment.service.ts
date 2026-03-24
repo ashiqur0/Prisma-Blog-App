@@ -69,8 +69,33 @@ const getCommentsByAuthor = async (authorId: string) => {
     });
 };
 
+const deleteComment = async (commentId: string, authorId: string) => {
+    const commentData = await prisma.comment.findFirst({
+        where: {
+            id: commentId,
+            authorId
+        }
+    });
+
+    if (!commentData) {
+        throw new Error("Comment not found or you don't have permission to delete this comment");
+    }
+
+    if (commentData.authorId !== authorId) {
+        throw new Error("You don't have permission to delete this comment");
+    }
+
+    return await prisma.comment.delete({
+        where: {
+            id: commentId
+        }
+    });
+}
+
 export const commentService = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
+    deleteComment,
+    
 }
