@@ -6,5 +6,6 @@ const router = expres.Router();
 
 router.post("/", auth(UserRole.USER, UserRole.ADMIN), commentController.createComment);
 router.get("/:id", commentController.getCommentsById);
+router.get("/author/:authorId", commentController.getCommentsByAuthor);
 
 export const commentRouter: Router = router;

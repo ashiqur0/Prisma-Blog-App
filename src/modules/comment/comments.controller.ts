@@ -49,7 +49,32 @@ const getCommentsById = async (req: Request, res: Response) => {
     }
 }
 
+const getCommentsByAuthor = async (req: Request, res: Response) => {
+    try {
+        const authorId = req.params.authorId;
+        const result = await commentService.getCommentsByAuthor(authorId as string);
+
+        if (!result || result.length === 0) {
+            return res.status(404).json({
+                message: "Comments not found for the author"
+            });
+        }
+
+        res.status(200).json({
+            message: "Comments fetched successfully",
+            comments: result
+        });
+
+    } catch (error: any) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
 export const commentController = {
     createComment,
     getCommentsById,
+    getCommentsByAuthor,
 }

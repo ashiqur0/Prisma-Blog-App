@@ -1,3 +1,4 @@
+import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
 const createComment = async (payload: {
@@ -41,7 +42,8 @@ const getCommentsById = async (commentId: string) => {
             post: {
                 select: {
                     id: true,
-                    title: true
+                    title: true,
+                    views: true
                 }
             }
         }
@@ -50,7 +52,25 @@ const getCommentsById = async (commentId: string) => {
     return result;
 }
 
+const getCommentsByAuthor = async (authorId: string) => {
+    return await prisma.comment.findMany({
+        where: {
+            authorId
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+            post: {
+                select: {
+                    id: true,
+                    title: true,
+                }
+            }
+        }
+    });
+};
+
 export const commentService = {
     createComment,
     getCommentsById,
+    getCommentsByAuthor,
 }
