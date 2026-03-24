@@ -1,3 +1,4 @@
+import { CommentStatus } from "../../../generated/prisma/enums";
 import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
@@ -92,10 +93,35 @@ const deleteComment = async (commentId: string, authorId: string) => {
     });
 }
 
+const updateComment = async (commentId: string, data: { content: string, status: CommentStatus }, authorId: string) => {
+    const commentData = await prisma.comment.findFirst({
+        where: {
+            id: commentId,
+            authorId
+        }
+    });
+
+    if (!commentData) {
+        throw new Error("Comment not found or you don't have permission to update this comment");
+    }
+
+    return await prisma.comment.update({
+        where: {
+            id: commentId,
+            authorId
+        },
+        data: {
+            content: data?.content,
+            status: data?.status
+        },
+        // data
+    });
+}
+
 export const commentService = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
     deleteComment,
-    
+    updateComment
 }
