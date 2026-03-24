@@ -19,7 +19,7 @@ const createComment = async (req: Request, res: Response) => {
             comment: result
         });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             message: "Internal server error",
             error: error
         });
@@ -28,7 +28,7 @@ const createComment = async (req: Request, res: Response) => {
 
 const getCommentsById = async (req: Request, res: Response) => {
     try {
-        const commentId = req.params.id;
+        const { commentId } = req.params;
         const result = await commentService.getCommentsById(commentId as string);
 
         if (!result) {
@@ -40,11 +40,87 @@ const getCommentsById = async (req: Request, res: Response) => {
         res.status(200).json({
             message: "Comment fetched successfully",
             comment: result
-        });        
+        });
     } catch (error) {
-        res.status(500).json({ 
+        res.status(500).json({
             message: "Internal server error",
             error: error
+        });
+    }
+}
+
+const getCommentsByAuthor = async (req: Request, res: Response) => {
+    try {
+        const authorId = req.params.authorId;
+        const result = await commentService.getCommentsByAuthor(authorId as string);
+
+        if (!result || result.length === 0) {
+            return res.status(404).json({
+                message: "Comments not found for the author"
+            });
+        }
+
+        res.status(200).json({
+            message: "Comments fetched successfully",
+            comments: result
+        });
+
+    } catch (error: any) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+const deleteComment = async (req: Request, res: Response) => {
+    try {
+        const user = req.user
+        const { commentId } = req.params;
+        await commentService.deleteComment(commentId as string, user?.id as string);
+
+        res.status(200).json({
+            message: "Comment deleted successfully"
+        });
+
+    } catch (error: any) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+const updateComment = async (req: Request, res: Response) => {
+    try {
+        const user = req.user
+        const { commentId } = req.params;
+        const result = await commentService.updateComment(commentId as string, req.body, user?.id as string);
+
+        res.status(200).json({
+            message: "Comment updated successfully",
+            comment: result
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error
+        });
+    }
+}
+
+const moderateComment = async (req: Request, res: Response) => {
+    try {
+        const { commentId } = req.params;
+        const result = await commentService.moderateComment(commentId as string, req.body);
+
+        res.status(200).json({
+            message: "Comment moderated successfully",
+            comment: result
+        });
+    } catch (error: any) {
+        res.status(500).json({
+            message: error.message || "Internal server error"
         });
     }
 }
@@ -52,4 +128,8 @@ const getCommentsById = async (req: Request, res: Response) => {
 export const commentController = {
     createComment,
     getCommentsById,
+    getCommentsByAuthor,
+    deleteComment,
+    updateComment,
+    moderateComment
 }

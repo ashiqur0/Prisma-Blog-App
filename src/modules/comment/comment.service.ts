@@ -1,3 +1,5 @@
+import { CommentStatus } from "../../../generated/prisma/enums";
+import { auth } from "../../lib/auth";
 import { prisma } from "../../lib/prisma";
 
 const createComment = async (payload: {
@@ -41,7 +43,8 @@ const getCommentsById = async (commentId: string) => {
             post: {
                 select: {
                     id: true,
-                    title: true
+                    title: true,
+                    views: true
                 }
             }
         }
@@ -50,7 +53,101 @@ const getCommentsById = async (commentId: string) => {
     return result;
 }
 
+const getCommentsByAuthor = async (authorId: string) => {
+    return await prisma.comment.findMany({
+        where: {
+            authorId
+        },
+        orderBy: { createdAt: 'desc' },
+        include: {
+            post: {
+                select: {
+                    id: true,
+                    title: true,
+                }
+            }
+        }
+    });
+};
+
+const deleteComment = async (commentId: string, authorId: string) => {
+    const commentData = await prisma.comment.findFirst({
+        where: {
+            id: commentId,
+            authorId
+        }
+    });
+
+    if (!commentData) {
+        throw new Error("Comment not found or you don't have permission to delete this comment");
+    }
+
+    if (commentData.authorId !== authorId) {
+        throw new Error("You don't have permission to delete this comment");
+    }
+
+    return await prisma.comment.delete({
+        where: {
+            id: commentId
+        }
+    });
+}
+
+const updateComment = async (commentId: string, data: { content: string, status: CommentStatus }, authorId: string) => {
+    const commentData = await prisma.comment.findFirst({
+        where: {
+            id: commentId,
+            authorId
+        }
+    });
+
+    if (!commentData) {
+        throw new Error("Comment not found or you don't have permission to update this comment");
+    }
+
+    return await prisma.comment.update({
+        where: {
+            id: commentId,
+            authorId
+        },
+        data: {
+            content: data?.content,
+            status: data?.status
+        },
+        // data
+    });
+}
+
+const moderateComment = async (commentId: string, data: { status: CommentStatus }) => {
+    const commentData = await prisma.comment.findUniqueOrThrow({
+        where: {
+            id: commentId
+        },
+        select: { // only select the fields we need
+            id: true,
+            status: true
+        }
+    });
+
+    if (commentData.status === data.status) {
+        throw new Error("Comment is already in the desired status");
+    }
+
+    return await prisma.comment.update({
+        where: {
+            id: commentId
+        },
+        data: {
+            status: data.status
+        }
+    });
+}
+
 export const commentService = {
     createComment,
     getCommentsById,
+    getCommentsByAuthor,
+    deleteComment,
+    updateComment,
+    moderateComment
 }
