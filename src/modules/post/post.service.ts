@@ -202,9 +202,39 @@ const getMyPosts = async (authorId: string) => {
     return result;
 }
 
+const updatePost = async (postId: string, data: Partial<Post>, authorId: string, isAdmin: boolean) => {
+    const postData = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+        select: {
+            id: true,
+            authorId: true
+        }
+    });
+
+    if (!isAdmin && (postData.authorId !== authorId)) {
+        throw new Error("Unauthorized");
+    }
+
+    if (!isAdmin) {
+        delete data.isFeatured; // only admin can update featured status. delete isFeatured field from data if user is not admin
+    }
+
+    const result = await prisma.post.update({
+        where: {
+            id: postData.id
+        },
+        data
+    })
+
+    return result;
+}
+
 export const postServices = {
     createPost,
     getAllPosts,
     getPostById,
-    getMyPosts
+    getMyPosts,
+    updatePost,
 }

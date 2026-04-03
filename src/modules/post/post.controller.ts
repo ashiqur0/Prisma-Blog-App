@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { postServices } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helper/paginationSortingHelper";
+import { UserRole } from "../../middleware/middleware";
 
 const createPost = async (req: Request, res: Response) => {
     try {
@@ -109,7 +110,7 @@ const getMyPosts = async (req: Request, res: Response) => {
         }
 
         const result = await postServices.getMyPosts(user.id);
-        
+
         res.status(200).json({
             success: true,
             message: "My posts retrieved successfully",
@@ -124,9 +125,32 @@ const getMyPosts = async (req: Request, res: Response) => {
     }
 }
 
+/**
+ * only admin can change isFeatured status of a post.
+ */
+const updatePost = async (req: Request, res: Response) => {
+    try {
+        const user = req.user;
+
+        if (!user) throw new Error("Unauthorized");
+
+        const { postId } = req.params;
+        const isAdmin = user.role === UserRole.ADMIN
+        console.log(user)
+        const result = await postServices.updatePost(postId as string, req.body, user.id, isAdmin);
+        res.status(200).json(result);
+    } catch (error: any) {
+        res.status(400).json({
+            error: error.message,
+            details: error
+        });
+    }
+}
+
 export const postController = {
     createPost,
     getAllPosts,
     getPostById,
     getMyPosts,
+    updatePost,
 }
