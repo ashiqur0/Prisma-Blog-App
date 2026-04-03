@@ -9,5 +9,6 @@ router.get("/my-posts", auth(UserRole.ADMIN, UserRole.USER), postController.getM
 router.get("/all", postController.getAllPosts);
 router.get("/:id", postController.getPostById);
 router.patch("/:postId", auth(UserRole.ADMIN, UserRole.USER), postController.updatePost);
+router.delete("/:postId", auth(UserRole.ADMIN, UserRole.USER), postController.deletePost);
 
 export const postRouter: Router = router;

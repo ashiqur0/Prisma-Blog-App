@@ -216,7 +216,7 @@ const updatePost = async (postId: string, data: Partial<Post>, authorId: string,
     if (!isAdmin && (postData.authorId !== authorId)) {
         throw new Error("Unauthorized");
     }
-
+    
     if (!isAdmin) {
         delete data.isFeatured; // only admin can update featured status. delete isFeatured field from data if user is not admin
     }
@@ -231,10 +231,33 @@ const updatePost = async (postId: string, data: Partial<Post>, authorId: string,
     return result;
 }
 
+const deletePost = async (postId: string, authorId: string, isAdmin: boolean) => {
+    const postData = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+        select: {
+            id: true,
+            authorId: true
+        }
+    });
+
+    if (!isAdmin && (postData.authorId !== authorId)) {
+        throw new Error("Unauthorized");
+    }
+
+    return await prisma.post.delete({
+        where: {
+            id: postData.id
+        }
+    });
+}
+
 export const postServices = {
     createPost,
     getAllPosts,
     getPostById,
     getMyPosts,
     updatePost,
+    deletePost
 }
