@@ -1,10 +1,21 @@
 import { NextFunction, Request, Response } from "express";
+import { Prisma } from "../../generated/prisma/client";
 
 function errorHandler(err: any, req: Request, res: Response, next: NextFunction) {
-    res.status(500)
+    let statusCode = 500;
+    let errorMessage = "Internal Server Error";
+    let errorDetails = err;
+
+    // PrismaClientValidationError
+    if (err instanceof Prisma.PrismaClientValidationError) {
+        statusCode = 400;
+        errorMessage = "Incorrect field type or missing required field";
+    }
+
+    res.status(statusCode)
     res.json({
-        message: "Error from error hadler",
-        error: err
+        message: errorMessage,
+        error: errorDetails
     });
 }
 
