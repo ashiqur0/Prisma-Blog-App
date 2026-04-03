@@ -1,4 +1,3 @@
-import { Stats } from "node:fs";
 import { CommentStatus, Post, PostStatus } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
@@ -149,8 +148,8 @@ const getPostById = async (postId: string) => {
                     },
                     include: {
                         replies: {
-                            where: { 
-                                status: CommentStatus.APPROVED 
+                            where: {
+                                status: CommentStatus.APPROVED
                             },
                             orderBy: { createdAt: "asc" },
                             include: {
@@ -171,8 +170,125 @@ const getPostById = async (postId: string) => {
     return result;
 }
 
+const getMyPosts = async (authorId: string) => {
+    await prisma.user.findUniqueOrThrow({
+        where: {
+            id: authorId,
+            status: "ACTIVE"
+        },
+        select: { id: true }
+    });
+
+    const result = await prisma.post.findMany({
+        where: {
+            authorId
+        },
+        orderBy: { createdAt: "desc" },
+        include: {
+            _count: {
+                select: { comments: true }
+            }
+        }
+    });
+
+    // const total = await prisma.post.aggregate({
+    //     _count: { id: true },
+    //     where: {
+    //         authorId
+    //     }
+    // });
+
+    return result;
+}
+
+const updatePost = async (postId: string, data: Partial<Post>, authorId: string, isAdmin: boolean) => {
+    const postData = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+        select: {
+            id: true,
+            authorId: true
+        }
+    });
+
+    if (!isAdmin && (postData.authorId !== authorId)) {
+        throw new Error("Unauthorized");
+    }
+
+    if (!isAdmin) {
+        delete data.isFeatured; // only admin can update featured status. delete isFeatured field from data if user is not admin
+    }
+
+    const result = await prisma.post.update({
+        where: {
+            id: postData.id
+        },
+        data
+    })
+
+    return result;
+}
+
+const deletePost = async (postId: string, authorId: string, isAdmin: boolean) => {
+    const postData = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+        select: {
+            id: true,
+            authorId: true
+        }
+    });
+
+    if (!isAdmin && (postData.authorId !== authorId)) {
+        throw new Error("Unauthorized");
+    }
+
+    return await prisma.post.delete({
+        where: {
+            id: postData.id
+        }
+    });
+}
+
+const getStats = async () => {
+    return await prisma.$transaction(async (tx) => {
+        const [totalPosts, publishedPosts, draftPosts, archivedPosts, totalComments, totalApprovedComments, totalUsers, adminCount, userCount, totalViews
+        ] = await Promise.all([
+            await tx.post.count(),
+            await tx.post.count({ where: { status: PostStatus.PUBLISHED } }),
+            await tx.post.count({ where: { status: PostStatus.DRAFT } }),
+            await tx.post.count({ where: { status: PostStatus.ARCHIVED } }),
+            await tx.comment.count(),
+            await tx.comment.count({ where: { status: CommentStatus.APPROVED } }),
+            await tx.user.count(),
+            await tx.user.count({ where: { role: "ADMIN" } }),
+            await tx.user.count({ where: { role: "USER"}}),
+            await tx.post.aggregate({ _sum: { views: true } })
+        ]);
+
+        return {
+            totalPosts,
+            publishedPosts,
+            draftPosts,
+            archivedPosts,
+            totalComments,
+            totalApprovedComments,
+            totalUsers,
+            adminCount,
+            userCount,
+            totalViews: totalViews._sum.views || 0
+        }
+    });
+}
+
 export const postServices = {
     createPost,
     getAllPosts,
-    getPostById
+    getPostById,
+    getMyPosts,
+    updatePost,
+    deletePost,
+    getStats
 }

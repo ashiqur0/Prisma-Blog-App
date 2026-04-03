@@ -27,7 +27,7 @@ const auth = (...roles: UserRole[]) => {
             const session = await betterAuth.api.getSession({
                 headers: req.headers as any
             });
-
+            
             if (!session || !session.user) {
                 return res.status(401).json({
                     success: false,
@@ -35,21 +35,21 @@ const auth = (...roles: UserRole[]) => {
                     error: "Unauthorized"
                 });
             }
-
+            
             if (!session.user.emailVerified) {
                 return res.status(403).json({
                     success: false,
                     message: "Email not verified"
                 });
             }
-
+            
             if (roles.length && !roles.includes(session.user.role as UserRole)) {
                 return res.status(403).json({
                     success: false,
                     message: "Forbidden"
                 });
             }
-
+            
             req.user = {
                 id: session.user.id,
                 email: session.user.email,
@@ -57,7 +57,7 @@ const auth = (...roles: UserRole[]) => {
                 role: session.user.role as UserRole,
                 emailVerified: session.user.emailVerified
             }
-
+            
             next();
         } catch (error) {
            next(error);
