@@ -4,6 +4,7 @@ import { auth } from "./lib/auth";
 import cors from "cors";
 import { commentRouter } from "./modules/comment/comment.routes";
 import { postRouter } from "./modules/post/post.routes";
+import errorHandler from "./middleware/globalErrorHandler";
 
 const app: Application = express();
 
@@ -23,5 +24,6 @@ app.get("/", (req, res) => {
 // apis
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
+app.use(errorHandler);
 
 export default app;
