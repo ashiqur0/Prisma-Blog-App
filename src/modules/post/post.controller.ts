@@ -109,7 +109,7 @@ const getMyPosts = async (req: Request, res: Response) => {
         }
 
         const result = await postServices.getMyPosts(user.id);
-        console.log({ result })
+        
         res.status(200).json({
             success: true,
             message: "My posts retrieved successfully",

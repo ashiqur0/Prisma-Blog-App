@@ -149,8 +149,8 @@ const getPostById = async (postId: string) => {
                     },
                     include: {
                         replies: {
-                            where: { 
-                                status: CommentStatus.APPROVED 
+                            where: {
+                                status: CommentStatus.APPROVED
                             },
                             orderBy: { createdAt: "asc" },
                             include: {
@@ -172,13 +172,32 @@ const getPostById = async (postId: string) => {
 }
 
 const getMyPosts = async (authorId: string) => {
-    console.log("Author ID:", authorId); // Debug log to check the authorId value
+    await prisma.user.findUniqueOrThrow({
+        where: {
+            id: authorId,
+            status: "ACTIVE"
+        },
+        select: { id: true }
+    });
+
     const result = await prisma.post.findMany({
         where: {
             authorId
         },
         orderBy: { createdAt: "desc" },
+        include: {
+            _count: {
+                select: { comments: true }
+            }
+        }
     });
+
+    // const total = await prisma.post.aggregate({
+    //     _count: { id: true },
+    //     where: {
+    //         authorId
+    //     }
+    // });
 
     return result;
 }
