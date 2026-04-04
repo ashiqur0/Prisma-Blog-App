@@ -5,6 +5,7 @@ import cors from "cors";
 import { commentRouter } from "./modules/comment/comment.routes";
 import { postRouter } from "./modules/post/post.routes";
 import errorHandler from "./middleware/globalErrorHandler";
+import notFound from "./middleware/NotFound";
 
 const app: Application = express();
 
@@ -24,6 +25,8 @@ app.get("/", (req, res) => {
 // apis
 app.use("/posts", postRouter);
 app.use("/comments", commentRouter);
+
+app.use(notFound);
 app.use(errorHandler);
 
 export default app;
